@@ -38,10 +38,7 @@ jobs:
         with:
           python-version: 3.12
       - name: Install hatch
-        run: |
-            # Remove click version constraint once
-            # https://github.com/pypa/hatch/issues/2050 resolved.
-            python -m pip install -U pip hatch "click<8.3"
+        run: python -m pip install -U pip hatch
       - name: Build package
         run: python -m hatch build
       - name: Publish package distributions to PyPI

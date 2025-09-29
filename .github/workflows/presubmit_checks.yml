@@ -30,9 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install hatch
         run: |
-            # Remove click version constraint once
-            # https://github.com/pypa/hatch/issues/2050 resolved.
-            python -m pip install -U pip hatch "click<8.3"
+            python -m pip install -U pip hatch
       - name: Check
         run: python -m hatch run check:all
       - name: Unit tests
