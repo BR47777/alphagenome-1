@@ -115,7 +115,7 @@ dependencies = [
 detached = true
 
 [tool.hatch.envs.check.scripts]
-format = 'pyink . --check'
+format = 'pyink . --check --diff'
 lint = 'pylint .'
 all = [
   'format',
