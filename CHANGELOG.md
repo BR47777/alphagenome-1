@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0]
+
+### Added
+
+-   Add `get_gene_intervals` to retrieve multiple gene intervals.
+-   Implement `__getitem__` on `TrackData` to generalize filter/slice methods.
+-   Add `normalize_variant` function to normalize variants with the underlying
+    assembly.
+-   Add missing "Assay title", "data_source" and "biosample" columns to splice
+    junction metadata.
+-   Add splice junction section to API docs.
+
+### Changed
+
+-   Update quick start notebook to not use shorter, less performant sequence
+    lengths.
+-   Update documentation on ChIP-TF and Histone units.
+-   Move some protocol buffer conversion functions from data to models
+    directory.
+-   Include link in README license section to API terms.
+
 ## [0.2.0]
 
 ### Added
