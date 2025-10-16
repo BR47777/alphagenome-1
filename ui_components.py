@@ -141,8 +141,8 @@ class InputValidator:
                 return False, f"End position ({end:,}) must be greater than start position ({start:,})", None
 
             width = end - start
-            if width > 1000000:
-                return False, f"Interval too large ({width:,} bp). Maximum 1,000,000 base pairs allowed.", None
+            if width > 2000000:  # Increased to 2M bp for better genomic analysis
+                return False, f"Interval too large ({width:,} bp). Maximum 2,000,000 base pairs allowed. Try a smaller region for detailed analysis.", None
 
             if width < 100:
                 return False, f"Interval too small ({width:,} bp). Minimum 100 base pairs required.", None

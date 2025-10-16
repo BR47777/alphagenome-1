@@ -289,6 +289,85 @@ async def main(message: cl.Message):
         await handle_general_query(message.content)
 
 
+async def suggest_optimal_interval(original_interval: str, width: int):
+    """Suggest optimal interval sizes for analysis."""
+
+    # Parse the original interval
+    try:
+        chrom_part, pos_part = original_interval.split(':', 1)
+        start_str, end_str = pos_part.split('-', 1)
+        start = int(start_str.strip().replace(',', ''))
+        end = int(end_str.strip().replace(',', ''))
+
+        # Calculate center point
+        center = (start + end) // 2
+
+        # Suggest different window sizes
+        suggestions = []
+        window_sizes = [500000, 1000000, 1500000]  # 500kb, 1Mb, 1.5Mb
+
+        for window in window_sizes:
+            if window < width:  # Only suggest smaller windows
+                half_window = window // 2
+                new_start = max(1, center - half_window)
+                new_end = center + half_window
+                suggestions.append(f"{chrom_part}:{new_start:,}-{new_end:,}")
+
+        if suggestions:
+            suggestion_content = f"""
+{UIEnhancements.create_status_card(
+    "info",
+    f"The interval you specified ({width:,} bp) is too large. Here are some optimal alternatives:",
+    "info"
+)}
+
+### 🎯 **Suggested Intervals** (centered on your region)
+
+<div style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+">
+"""
+
+            for i, suggestion in enumerate(suggestions):
+                size = window_sizes[i]
+                size_label = f"{size//1000}kb" if size < 1000000 else f"{size//1000000}Mb"
+
+                suggestion_content += f"""
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        padding: 15px;
+        color: white;
+        text-align: center;
+    ">
+        <h4 style="margin: 0 0 10px 0;">{size_label} Window</h4>
+        <code style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 5px; font-size: 0.9em;">
+            {suggestion}
+        </code>
+        <p style="margin: 10px 0 0 0; font-size: 0.8em; opacity: 0.9;">
+            Copy and paste this interval
+        </p>
+    </div>
+"""
+
+            suggestion_content += """
+</div>
+
+💡 **Tip**: Smaller intervals provide more detailed analysis and faster processing.
+            """
+
+            await cl.Message(
+                content=suggestion_content,
+                author="AlphaGenome"
+            ).send()
+
+    except Exception as e:
+        logger.error(f"Error suggesting optimal interval: {e}")
+
+
 async def test_enhanced_api():
     """Test the enhanced API functionality."""
     logger.info("Testing enhanced API functionality")
@@ -937,7 +1016,22 @@ async def handle_interval_prediction_enhanced(content: str):
         # Validate interval
         is_valid, message, interval = InputValidator.validate_interval(interval_str)
         if not is_valid:
-            await UIHelpers.show_error_message(message)
+            # Show error message
+            error_card = UIEnhancements.create_status_card("error", message, "error")
+            await cl.Message(content=error_card, author="System").send()
+
+            # If it's a size issue, suggest optimal intervals
+            if "too large" in message.lower():
+                try:
+                    # Extract width from error message
+                    import re
+                    width_match = re.search(r'\(([0-9,]+) bp\)', message)
+                    if width_match:
+                        width = int(width_match.group(1).replace(',', ''))
+                        await suggest_optimal_interval(interval_str, width)
+                except Exception as e:
+                    logger.error(f"Error suggesting intervals: {e}")
+
             return
 
         await UIHelpers.show_success_message(message)
