@@ -29,6 +29,7 @@ import matplotlib
 from ui_components import InputValidator, UIHelpers, AdvancedInputForms, ResultsDisplay, APIValidator
 from utils.logging_config import get_logger, get_error_handler, get_performance_monitor, setup_logging
 from ui_enhancements import UIEnhancements, MessageEnhancements
+from api_client import EnhancedAlphaGenomeClient
 
 # Set matplotlib backend for web display
 matplotlib.use('Agg')
@@ -206,6 +207,58 @@ async def initialize_model(api_key: str):
         performance_monitor.end_timer("model_initialization")
         return False
 
+
+async def predict_variant_enhanced(chromosome: str, position: int, ref: str, alt: str) -> Dict[str, Any]:
+    """Enhanced variant prediction using the new API client."""
+    logger.info(f"Starting enhanced variant prediction: {chromosome}:{position}:{ref}>{alt}")
+    performance_monitor.start_timer("enhanced_variant_prediction")
+
+    try:
+        # Get API key from session
+        api_key = current_session_data.get('api_key')
+        if not api_key:
+            raise ValueError("No API key available")
+
+        # Create enhanced client and make prediction
+        async with EnhancedAlphaGenomeClient(api_key) as client:
+            response = await client.predict_variant_hybrid(
+                chromosome=chromosome,
+                position=position,
+                ref=ref,
+                alt=alt,
+                organism="human"
+            )
+
+            performance_monitor.end_timer(
+                "enhanced_variant_prediction",
+                {"success": response.success, "response_time": response.response_time}
+            )
+
+            if response.success:
+                logger.info(f"Enhanced variant prediction successful in {response.response_time:.2f}s")
+                return {
+                    "success": True,
+                    "data": response.data,
+                    "response_time": response.response_time,
+                    "method": response.data.get("method", "REST_API")
+                }
+            else:
+                logger.error(f"Enhanced variant prediction failed: {response.error}")
+                return {
+                    "success": False,
+                    "error": response.error,
+                    "response_time": response.response_time
+                }
+
+    except Exception as e:
+        performance_monitor.end_timer("enhanced_variant_prediction")
+        logger.error(f"Enhanced variant prediction exception: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Prediction failed: {str(e)}"
+        }
+
+
 @cl.on_message
 async def main(message: cl.Message):
     """Handle incoming messages and route to appropriate handlers."""
@@ -233,8 +286,96 @@ async def main(message: cl.Message):
         await show_advanced_options()
     elif user_input == "batch":
         await handle_batch_processing()
+    elif user_input == "test api":
+        await test_enhanced_api()
     else:
         await handle_general_query(message.content)
+
+
+async def test_enhanced_api():
+    """Test the enhanced API functionality."""
+    logger.info("Testing enhanced API functionality")
+
+    # Check if model is initialized
+    if not current_session_data.get('model') or not current_session_data.get('api_key'):
+        await MessageEnhancements.send_enhanced_message(
+            content=UIEnhancements.create_status_card(
+                "error",
+                "Please initialize the model first by setting up your API key.",
+                "error"
+            ),
+            author="System"
+        )
+        return
+
+    # Show testing progress
+    progress_content = UIEnhancements.create_progress_bar(0.2, "Testing enhanced API...")
+    test_msg = await MessageEnhancements.send_enhanced_message(
+        content=f"🧪 **Testing Enhanced API**\n\n{progress_content}",
+        author="AlphaGenome"
+    )
+
+    try:
+        # Test variant prediction with example data
+        result = await predict_variant_enhanced(
+            chromosome="chr12",
+            position=11223344,
+            ref="G",
+            alt="C"
+        )
+
+        # Update progress
+        progress_content = UIEnhancements.create_progress_bar(1.0, "API test completed!")
+
+        if result["success"]:
+            # Format successful result
+            method = result.get("method", "Unknown")
+            response_time = result.get("response_time", 0)
+
+            success_content = f"""
+{UIEnhancements.create_status_card(
+    "success",
+    f"Enhanced API test successful!\n\n"
+    f"🔬 Method used: {method}\n"
+    f"⚡ Response time: {response_time:.2f}s\n"
+    f"📊 Data received: {len(str(result.get('data', {})))} characters",
+    "success"
+)}
+
+{progress_content}
+            """
+
+            test_msg.content = success_content
+            await test_msg.update()
+
+        else:
+            # Format error result
+            error_content = f"""
+{UIEnhancements.create_status_card(
+    "warning",
+    f"REST API not available, using SDK fallback: {result.get('error', 'Unknown error')}",
+    "warning"
+)}
+
+{progress_content}
+            """
+
+            test_msg.content = error_content
+            await test_msg.update()
+
+    except Exception as e:
+        logger.error(f"API test failed with exception: {str(e)}")
+        error_content = f"""
+{UIEnhancements.create_status_card(
+    "error",
+    f"API test encountered an error: {str(e)}",
+    "error"
+)}
+        """
+
+        test_msg.content = error_content
+        await test_msg.update()
+
 
 async def show_help():
     """Display comprehensive help information."""
@@ -260,6 +401,9 @@ async def show_help():
 ### Utilities
 - `examples` - Show example commands
 - `help` - Show this help message
+- `test api` - Test enhanced API functionality
+- `advanced` - Show advanced options
+- `batch` - Batch processing options
 
 ## Example Usage:
 
