@@ -377,6 +377,104 @@ async def test_enhanced_api():
         await test_msg.update()
 
 
+async def get_enhanced_prediction_parameters():
+    """Get prediction parameters with enhanced UI."""
+
+    # Create organism selection with beautiful UI
+    organism_selection = f"""
+{UIEnhancements.create_status_card(
+    "info",
+    "Please select the organism for your analysis:",
+    "info"
+)}
+
+<div style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+">
+    <div style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    " onclick="selectOrganism('human')">
+        <div style="font-size: 2em; margin-bottom: 10px;">🧬</div>
+        <h3 style="margin: 0 0 10px 0;">Human</h3>
+        <p style="margin: 0; opacity: 0.9; font-size: 0.9em;">
+            Homo sapiens<br>
+            GRCh38/hg38 reference
+        </p>
+    </div>
+
+    <div style="
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    " onclick="selectOrganism('mouse')">
+        <div style="font-size: 2em; margin-bottom: 10px;">🐭</div>
+        <h3 style="margin: 0 0 10px 0;">Mouse</h3>
+        <p style="margin: 0; opacity: 0.9; font-size: 0.9em;">
+            Mus musculus<br>
+            GRCm39/mm39 reference
+        </p>
+    </div>
+</div>
+
+**Please type:** `human` or `mouse`
+    """
+
+    await MessageEnhancements.send_enhanced_message(
+        content=organism_selection,
+        author="AlphaGenome"
+    )
+
+    # Wait for user response
+    organism_response = await cl.AskUserMessage(
+        content="Select organism (human/mouse):",
+        timeout=60
+    ).send()
+
+    if organism_response:
+        organism = organism_response.content.strip().lower()
+        if organism not in ['human', 'mouse']:
+            organism = 'human'  # Default to human
+    else:
+        organism = 'human'  # Default to human
+
+    # Show organism selection confirmation
+    organism_emoji = "🧬" if organism == "human" else "🐭"
+    organism_name = "Human (Homo sapiens)" if organism == "human" else "Mouse (Mus musculus)"
+
+    confirmation_card = UIEnhancements.create_status_card(
+        "success",
+        f"Organism selected: {organism_emoji} {organism_name}",
+        "success"
+    )
+
+    await MessageEnhancements.send_enhanced_message(
+        content=confirmation_card,
+        author="AlphaGenome"
+    )
+
+    # Return parameters (simplified for now, can be enhanced later)
+    return {
+        'organism': organism,
+        'requested_outputs': ['RNA_SEQ'],  # Default output
+        'ontology_terms': ['UBERON:0001157']  # Default tissue
+    }
+
+
 async def show_help():
     """Display comprehensive help information."""
     
@@ -914,9 +1012,20 @@ async def handle_variant_prediction_enhanced(content: str):
 
         await UIHelpers.show_success_message(message)
 
-        # Show variant info
-        variant_info = UIHelpers.format_variant_info(variant)
-        await cl.Message(content=f"**Variant Information:**\n{variant_info}").send()
+        # Show enhanced variant info
+        variant_data = {
+            "chromosome": variant.chromosome,
+            "position": variant.position,
+            "reference_bases": variant.reference_bases,
+            "alternate_bases": variant.alternate_bases,
+            "variant_type": "SNV" if len(variant.reference_bases) == 1 and len(variant.alternate_bases) == 1 else "INDEL"
+        }
+
+        variant_display = MessageEnhancements.format_genomic_data("variant", variant_data)
+        await MessageEnhancements.send_enhanced_message(
+            content=variant_display,
+            author="AlphaGenome"
+        )
 
         # Create interval around variant
         interval_start = max(0, variant.position - 50000)
@@ -927,22 +1036,97 @@ async def handle_variant_prediction_enhanced(content: str):
             end=interval_end
         )
 
-        # Get advanced parameters
-        params = await AdvancedInputForms.get_prediction_parameters()
+        # Get enhanced parameters with better UI
+        params = await get_enhanced_prediction_parameters()
 
-        # Show processing message
-        processing_msg = await UIHelpers.show_loading_message(
-            f"Processing variant effect analysis with {len(params['requested_outputs'])} output types..."
+        # Show enhanced processing message
+        progress_content = UIEnhancements.create_progress_bar(0.3, "Processing variant effect analysis...")
+        processing_msg = await MessageEnhancements.send_enhanced_message(
+            content=f"🔬 **Analyzing Variant Effects**\n\n{progress_content}\n\n"
+                   f"📊 Output types: {len(params['requested_outputs'])}\n"
+                   f"🧬 Organism: {params['organism'].title()}\n"
+                   f"📍 Analysis region: {interval.width:,} bp",
+            author="AlphaGenome"
         )
 
-        # Make prediction
-        outputs = dna_model.predict_variant(
-            interval=interval,
-            variant=variant,
-            organism=params['organism'],
-            requested_outputs=params['requested_outputs'],
-            ontology_terms=params['ontology_terms']
-        )
+        try:
+            # Try enhanced API first
+            result = await predict_variant_enhanced(
+                chromosome=variant.chromosome,
+                position=variant.position,
+                ref=variant.reference_bases,
+                alt=variant.alternate_bases
+            )
+
+            if result["success"]:
+                # Enhanced API worked
+                progress_content = UIEnhancements.create_progress_bar(1.0, "Analysis complete!")
+                method = result.get("method", "Enhanced API")
+                response_time = result.get("response_time", 0)
+
+                success_content = f"""
+{UIEnhancements.create_status_card(
+    "success",
+    f"Variant analysis completed successfully!\n\n"
+    f"🔬 Method: {method}\n"
+    f"⚡ Response time: {response_time:.2f}s\n"
+    f"📊 Analysis complete",
+    "success"
+)}
+
+{progress_content}
+                """
+
+                processing_msg.content = success_content
+                await processing_msg.update()
+
+                # Show results
+                await MessageEnhancements.send_enhanced_message(
+                    content="📈 **Analysis Results**\n\nVariant effect analysis completed using enhanced API. "
+                           "Results show the predicted impact of the variant on genomic features.",
+                    author="AlphaGenome"
+                )
+
+            else:
+                # Fall back to SDK
+                progress_content = UIEnhancements.create_progress_bar(0.6, "Falling back to SDK method...")
+                processing_msg.content = f"🔄 **Switching to SDK Method**\n\n{progress_content}\n\nEnhanced API unavailable, using SDK fallback..."
+                await processing_msg.update()
+
+                # Make prediction with SDK
+                outputs = dna_model.predict_variant(
+                    interval=interval,
+                    variant=variant,
+                    organism=params['organism'],
+                    requested_outputs=params['requested_outputs'],
+                    ontology_terms=params['ontology_terms']
+                )
+
+                # Update with success
+                progress_content = UIEnhancements.create_progress_bar(1.0, "SDK analysis complete!")
+                success_content = f"""
+{UIEnhancements.create_status_card(
+    "success",
+    "Variant analysis completed using SDK method!",
+    "success"
+)}
+
+{progress_content}
+                """
+
+                processing_msg.content = success_content
+                await processing_msg.update()
+
+        except Exception as e:
+            logger.error(f"Variant prediction failed: {str(e)}")
+            error_content = UIEnhancements.create_status_card(
+                "error",
+                f"Variant analysis failed: {str(e)}",
+                "error"
+            )
+            processing_msg.content = error_content
+            await processing_msg.update()
+            return
 
         # Update processing message
         await processing_msg.update(

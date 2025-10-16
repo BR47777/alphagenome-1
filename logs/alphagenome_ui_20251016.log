@@ -93,3 +93,4 @@ chainlit.context.ChainlitContextException: Chainlit context not found
 
 2025-10-16 10:30:17,256 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
 2025-10-16 10:55:54,888 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:58:27,061 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
