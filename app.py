@@ -28,6 +28,7 @@ import matplotlib
 # Local imports
 from ui_components import InputValidator, UIHelpers, AdvancedInputForms, ResultsDisplay, APIValidator
 from utils.logging_config import get_logger, get_error_handler, get_performance_monitor, setup_logging
+from ui_enhancements import UIEnhancements, MessageEnhancements
 
 # Set matplotlib backend for web display
 matplotlib.use('Agg')
@@ -48,39 +49,50 @@ async def start():
     performance_monitor.start_timer("session_initialization")
 
     try:
-        # Welcome message
-        welcome_msg = """
-# 🧬 Welcome to AlphaGenome Interactive UI
+        # Enhanced welcome message with styling
+        welcome_content = UIEnhancements.create_welcome_card()
+        feature_grid = UIEnhancements.create_feature_grid()
+        quick_start = UIEnhancements.create_quick_start_guide()
 
-AlphaGenome is Google DeepMind's unifying model for deciphering the regulatory code within DNA sequences.
+        full_welcome = f"""
+{welcome_content}
 
-## What you can do:
-- **Predict genomic outputs** from DNA sequences up to 1M base pairs
-- **Analyze variant effects** on gene expression and chromatin features
-- **Visualize predictions** with interactive plots
-- **Score intervals and variants** with multiple scoring methods
+{feature_grid}
 
-## Getting Started:
-1. First, provide your AlphaGenome API key
-2. Choose your analysis type:
-   - Sequence Prediction
-   - Interval Prediction
-   - Variant Analysis
-   - Batch Scoring
+{quick_start}
 
-Type **"help"** for detailed instructions or **"setup"** to configure your API key.
+---
+
+### 💬 **How to Get Started**
+
+Type one of these commands to begin:
+- **`setup`** - Configure your API key
+- **`help`** - View detailed instructions
+- **`sequence: ATCGATCG...`** - Analyze a DNA sequence
+- **`interval: chr22:1000-2000`** - Analyze a genomic region
+- **`variant: chr22:1000:A>T`** - Analyze a variant effect
         """
 
-        await cl.Message(content=welcome_msg).send()
+        await MessageEnhancements.send_enhanced_message(
+            content=full_welcome,
+            message_type="info",
+            author="AlphaGenome"
+        )
 
         # Check if API key is available
         api_key = os.getenv("ALPHAGENOME_API_KEY")
         if not api_key:
             logger.info("No API key found in environment")
-            await cl.Message(
-                content="⚠️ **API Key Required**: Please set your AlphaGenome API key using the 'setup' command.",
+            status_card = UIEnhancements.create_status_card(
+                "warning",
+                "API Key Required: Please set your AlphaGenome API key using the 'setup' command.",
+                "warning"
+            )
+            await MessageEnhancements.send_enhanced_message(
+                content=status_card,
+                message_type="warning",
                 author="System"
-            ).send()
+            )
         else:
             logger.info("API key found in environment, initializing model")
             await initialize_model(api_key)
@@ -109,8 +121,13 @@ async def initialize_model(api_key: str):
             await cl.Message(content=error_msg, author="System").send()
             return False
 
-        # Show loading message
-        loading_msg = await cl.Message(content="🔄 Initializing AlphaGenome model...").send()
+        # Show enhanced loading message with progress
+        progress_content = UIEnhancements.create_progress_bar(0.1, "Initializing AlphaGenome model...")
+        loading_msg = await MessageEnhancements.send_enhanced_message(
+            content=f"🔄 **Initializing AlphaGenome Model**\n\n{progress_content}",
+            message_type="info",
+            author="AlphaGenome"
+        )
 
         # Create the model client with timeout
         try:
@@ -123,7 +140,8 @@ async def initialize_model(api_key: str):
         except Exception as e:
             logger.error(f"Failed to create DNA client: {str(e)}")
             error_msg = error_handler.handle_api_error(e, "model creation")
-            await loading_msg.update(content=error_msg)
+            loading_msg.content = error_msg
+            await loading_msg.update()
             return False
 
         # Test the connection and validate response
@@ -138,15 +156,15 @@ async def initialize_model(api_key: str):
 
             if not is_valid_response:
                 logger.error(f"Invalid API response: {response_msg}")
-                await loading_msg.update(
-                    content=f"❌ **API Response Error**: {response_msg}"
-                )
+                loading_msg.content = f"❌ **API Response Error**: {response_msg}"
+                await loading_msg.update()
                 return False
 
         except Exception as e:
             logger.error(f"Failed to retrieve metadata: {str(e)}")
             error_msg = error_handler.handle_api_error(e, "metadata retrieval")
-            await loading_msg.update(content=error_msg)
+            loading_msg.content = error_msg
+            await loading_msg.update()
             return False
 
         # Count available output types
@@ -154,12 +172,16 @@ async def initialize_model(api_key: str):
         logger.info(f"Model initialized with {output_count} available output types")
 
         # Update loading message with success
-        await loading_msg.update(
-            content="✅ **AlphaGenome model initialized successfully!**\n\n"
-                   f"🔬 Available output types: {output_count}\n"
-                   f"🔑 API key validated: {validation_msg}\n"
-                   "🚀 You can now start making predictions!"
+        success_card = UIEnhancements.create_status_card(
+            "success",
+            f"AlphaGenome model initialized successfully!\n\n"
+            f"🔬 Available output types: {output_count}\n"
+            f"🔑 API key validated: {validation_msg}\n"
+            f"🚀 You can now start making predictions!",
+            "success"
         )
+        loading_msg.content = success_card
+        await loading_msg.update()
 
         # Store in session
         current_session_data['model'] = dna_model
