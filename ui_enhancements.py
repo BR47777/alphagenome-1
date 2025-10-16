@@ -324,31 +324,17 @@ class MessageEnhancements:
     """Enhanced message formatting and styling."""
     
     @staticmethod
-    async def send_enhanced_message(content: str, message_type: str = "info", 
+    async def send_enhanced_message(content: str, message_type: str = "info",
                                   author: str = "AlphaGenome", elements: List = None) -> cl.Message:
         """Send an enhanced message with styling and avatars."""
-        
-        # Configure avatar based on author
-        avatar_config = None
-        if author == "AlphaGenome":
-            avatar_config = cl.Avatar(
-                name="AlphaGenome",
-                url="https://raw.githubusercontent.com/google-deepmind/alphagenome/main/docs/source/_static/alphagenome_logo.png"
-            )
-        elif author == "System":
-            avatar_config = cl.Avatar(
-                name="System", 
-                url="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            )
-        
-        # Create and send message
+
+        # Create and send message without avatar for now (compatibility)
         message = cl.Message(
             content=content,
             author=author,
-            avatar=avatar_config,
             elements=elements or []
         )
-        
+
         await message.send()
         return message
     

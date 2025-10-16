@@ -74,11 +74,10 @@ Type one of these commands to begin:
 - **`variant: chr22:1000:A>T`** - Analyze a variant effect
         """
 
-        await MessageEnhancements.send_enhanced_message(
+        await cl.Message(
             content=full_welcome,
-            message_type="info",
             author="AlphaGenome"
-        )
+        ).send()
 
         # Check if API key is available
         api_key = os.getenv("ALPHAGENOME_API_KEY")
@@ -89,11 +88,10 @@ Type one of these commands to begin:
                 "API Key Required: Please set your AlphaGenome API key using the 'setup' command.",
                 "warning"
             )
-            await MessageEnhancements.send_enhanced_message(
+            await cl.Message(
                 content=status_card,
-                message_type="warning",
                 author="System"
-            )
+            ).send()
         else:
             logger.info("API key found in environment, initializing model")
             await initialize_model(api_key)
@@ -124,11 +122,10 @@ async def initialize_model(api_key: str):
 
         # Show enhanced loading message with progress
         progress_content = UIEnhancements.create_progress_bar(0.1, "Initializing AlphaGenome model...")
-        loading_msg = await MessageEnhancements.send_enhanced_message(
+        loading_msg = await cl.Message(
             content=f"🔄 **Initializing AlphaGenome Model**\n\n{progress_content}",
-            message_type="info",
             author="AlphaGenome"
-        )
+        ).send()
 
         # Create the model client with timeout
         try:
@@ -298,22 +295,22 @@ async def test_enhanced_api():
 
     # Check if model is initialized
     if not current_session_data.get('model') or not current_session_data.get('api_key'):
-        await MessageEnhancements.send_enhanced_message(
+        await cl.Message(
             content=UIEnhancements.create_status_card(
                 "error",
                 "Please initialize the model first by setting up your API key.",
                 "error"
             ),
             author="System"
-        )
+        ).send()
         return
 
     # Show testing progress
     progress_content = UIEnhancements.create_progress_bar(0.2, "Testing enhanced API...")
-    test_msg = await MessageEnhancements.send_enhanced_message(
+    test_msg = await cl.Message(
         content=f"🧪 **Testing Enhanced API**\n\n{progress_content}",
         author="AlphaGenome"
-    )
+    ).send()
 
     try:
         # Test variant prediction with example data
@@ -434,10 +431,10 @@ async def get_enhanced_prediction_parameters():
 **Please type:** `human` or `mouse`
     """
 
-    await MessageEnhancements.send_enhanced_message(
+    await cl.Message(
         content=organism_selection,
         author="AlphaGenome"
-    )
+    ).send()
 
     # Wait for user response
     organism_response = await cl.AskUserMessage(
@@ -462,10 +459,10 @@ async def get_enhanced_prediction_parameters():
         "success"
     )
 
-    await MessageEnhancements.send_enhanced_message(
+    await cl.Message(
         content=confirmation_card,
         author="AlphaGenome"
-    )
+    ).send()
 
     # Return parameters (simplified for now, can be enhanced later)
     return {
@@ -1022,10 +1019,10 @@ async def handle_variant_prediction_enhanced(content: str):
         }
 
         variant_display = MessageEnhancements.format_genomic_data("variant", variant_data)
-        await MessageEnhancements.send_enhanced_message(
+        await cl.Message(
             content=variant_display,
             author="AlphaGenome"
-        )
+        ).send()
 
         # Create interval around variant
         interval_start = max(0, variant.position - 50000)
@@ -1041,13 +1038,13 @@ async def handle_variant_prediction_enhanced(content: str):
 
         # Show enhanced processing message
         progress_content = UIEnhancements.create_progress_bar(0.3, "Processing variant effect analysis...")
-        processing_msg = await MessageEnhancements.send_enhanced_message(
+        processing_msg = await cl.Message(
             content=f"🔬 **Analyzing Variant Effects**\n\n{progress_content}\n\n"
                    f"📊 Output types: {len(params['requested_outputs'])}\n"
                    f"🧬 Organism: {params['organism'].title()}\n"
                    f"📍 Analysis region: {interval.width:,} bp",
             author="AlphaGenome"
-        )
+        ).send()
 
         try:
             # Try enhanced API first
@@ -1081,11 +1078,11 @@ async def handle_variant_prediction_enhanced(content: str):
                 await processing_msg.update()
 
                 # Show results
-                await MessageEnhancements.send_enhanced_message(
+                await cl.Message(
                     content="📈 **Analysis Results**\n\nVariant effect analysis completed using enhanced API. "
                            "Results show the predicted impact of the variant on genomic features.",
                     author="AlphaGenome"
-                )
+                ).send()
 
             else:
                 # Fall back to SDK

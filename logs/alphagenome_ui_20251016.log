@@ -94,3 +94,69 @@ chainlit.context.ChainlitContextException: Chainlit context not found
 2025-10-16 10:30:17,256 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
 2025-10-16 10:55:54,888 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
 2025-10-16 10:58:27,061 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:59:01,107 - alphagenome_ui - INFO - start:49 - Starting new chat session
+2025-10-16 10:59:01,110 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during session initialization: Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 77, in start
+    await MessageEnhancements.send_enhanced_message(
+  File "/workspaces/alphagenome/ui_enhancements.py", line 334, in send_enhanced_message
+    avatar_config = cl.Avatar(
+                    ^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/utils.py", line 85, in __getattr__
+    module_path = registry[name]
+                  ~~~~~~~~^^^^^^
+KeyError: 'Avatar'
+
+2025-10-16 10:59:01,112 - alphagenome_ui - INFO - end_timer:175 - Performance [session_initialization]: 0.005s
+2025-10-16 10:59:22,526 - alphagenome_ui - INFO - start:49 - Starting new chat session
+2025-10-16 10:59:22,527 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during session initialization: Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 77, in start
+    await MessageEnhancements.send_enhanced_message(
+  File "/workspaces/alphagenome/ui_enhancements.py", line 334, in send_enhanced_message
+    avatar_config = cl.Avatar(
+                    ^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/utils.py", line 85, in __getattr__
+    module_path = registry[name]
+                  ~~~~~~~~^^^^^^
+KeyError: 'Avatar'
+
+2025-10-16 10:59:22,529 - alphagenome_ui - INFO - end_timer:175 - Performance [session_initialization]: 0.002s
+2025-10-16 11:00:00,264 - alphagenome_ui - INFO - start:49 - Starting new chat session
+2025-10-16 11:00:00,265 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during session initialization: Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 77, in start
+    await MessageEnhancements.send_enhanced_message(
+  File "/workspaces/alphagenome/ui_enhancements.py", line 334, in send_enhanced_message
+    avatar_config = cl.Avatar(
+                    ^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/utils.py", line 85, in __getattr__
+    module_path = registry[name]
+                  ~~~~~~~~^^^^^^
+KeyError: 'Avatar'
+
+2025-10-16 11:00:00,268 - alphagenome_ui - INFO - end_timer:175 - Performance [session_initialization]: 0.003s
+2025-10-16 11:00:20,530 - alphagenome_ui - INFO - start:49 - Starting new chat session
+2025-10-16 11:00:20,531 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during session initialization: Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 77, in start
+    await MessageEnhancements.send_enhanced_message(
+  File "/workspaces/alphagenome/ui_enhancements.py", line 334, in send_enhanced_message
+    avatar_config = cl.Avatar(
+                    ^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/utils.py", line 85, in __getattr__
+    module_path = registry[name]
+                  ~~~~~~~~^^^^^^
+KeyError: 'Avatar'
+
+2025-10-16 11:00:20,532 - alphagenome_ui - INFO - end_timer:175 - Performance [session_initialization]: 0.002s
+2025-10-16 11:00:31,608 - alphagenome_ui - INFO - start:49 - Starting new chat session
+2025-10-16 11:00:31,609 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during session initialization: Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 77, in start
+    await MessageEnhancements.send_enhanced_message(
+  File "/workspaces/alphagenome/ui_enhancements.py", line 334, in send_enhanced_message
+    avatar_config = cl.Avatar(
+                    ^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/utils.py", line 85, in __getattr__
+    module_path = registry[name]
+                  ~~~~~~~~^^^^^^
+KeyError: 'Avatar'
+
+2025-10-16 11:00:31,610 - alphagenome_ui - INFO - end_timer:175 - Performance [session_initialization]: 0.002s
+2025-10-16 11:03:15,994 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
