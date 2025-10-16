@@ -1,0 +1,27 @@
+# Core dependencies
+chainlit>=2.8.0
+matplotlib>=3.5.0
+pandas>=1.5.0
+numpy>=1.21.0
+
+# AlphaGenome dependencies (already in pyproject.toml)
+# These will be available since we're in the alphagenome environment
+# absl-py
+# anndata
+# grpcio>=1.67.1
+# immutabledict
+# intervaltree
+# jaxtyping
+# ml_dtypes
+# protobuf>=5.28.3
+# pyarrow
+# scipy
+# seaborn
+# tqdm
+# typeguard
+# typing_extensions
+# zstandard
+
+# Additional UI dependencies
+python-dotenv>=1.0.0
+asyncio-mqtt>=0.11.0
