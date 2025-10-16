@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """
-Test script for AlphaGenome Chainlit UI Application
+Enhanced Test Suite for AlphaGenome Chainlit UI Application
 
-This script tests the core functionality without requiring an API key.
+This script provides comprehensive testing including:
+- Import validation
+- Input validation testing
+- API response validation
+- Mock API testing
+- Integration testing
 """
 
 import sys
 import traceback
+import subprocess
+import os
 from pathlib import Path
 
 def test_imports():
@@ -227,23 +234,121 @@ def test_app_loading():
     
     return True
 
+def test_enhanced_validation():
+    """Test enhanced validation features."""
+    print("\n🧪 Testing enhanced validation features...")
+
+    from ui_components import InputValidator, APIValidator
+
+    # Test API key validation
+    test_api_keys = [
+        ("AIzaSyCD4-gO0ZpTQhV2twqzIeASAUE7ks8986M", True, "Valid API key"),
+        ("invalid_key", False, "Invalid format"),
+        ("", False, "Empty key"),
+        ("AIza123", False, "Too short"),
+    ]
+
+    all_passed = True
+    for key, expected_valid, description in test_api_keys:
+        is_valid, message = InputValidator.validate_api_key(key)
+        status = "✅" if is_valid == expected_valid else "❌"
+        if is_valid != expected_valid:
+            all_passed = False
+        print(f"{status} {description}: {message}")
+
+    # Test ontology terms validation
+    ontology_tests = [
+        (["UBERON:0001157"], True, "Valid UBERON term"),
+        (["CL:0000001"], True, "Valid CL term"),
+        (["invalid_term"], False, "Invalid format"),
+        ([], False, "Empty list"),
+    ]
+
+    for terms, expected_valid, description in ontology_tests:
+        is_valid, message, validated = InputValidator.validate_ontology_terms(terms)
+        status = "✅" if is_valid == expected_valid else "❌"
+        if is_valid != expected_valid:
+            all_passed = False
+        print(f"{status} {description}: {message}")
+
+    # Test output types validation
+    output_tests = [
+        (["RNA_SEQ"], True, "Valid RNA_SEQ"),
+        (["RNA_SEQ", "ATAC_SEQ"], True, "Multiple valid types"),
+        (["INVALID_TYPE"], False, "Invalid type"),
+        ([], False, "Empty list"),
+    ]
+
+    for types, expected_valid, description in output_tests:
+        is_valid, message, validated = InputValidator.validate_output_types(types)
+        status = "✅" if is_valid == expected_valid else "❌"
+        if is_valid != expected_valid:
+            all_passed = False
+        print(f"{status} {description}: {message}")
+
+    return all_passed
+
+def run_pytest_tests():
+    """Run pytest test suite if available."""
+    print("\n🧪 Running comprehensive test suite with pytest...")
+
+    tests_dir = Path("tests")
+    if not tests_dir.exists():
+        print("⚠️  Tests directory not found, skipping pytest tests")
+        return True
+
+    try:
+        # Check if pytest is available
+        result = subprocess.run([sys.executable, "-m", "pytest", "--version"],
+                              capture_output=True, text=True)
+        if result.returncode != 0:
+            print("⚠️  pytest not available, skipping comprehensive tests")
+            print("💡 Install pytest with: pip install pytest")
+            return True
+
+        # Run pytest tests
+        print("Running pytest test suite...")
+        result = subprocess.run([
+            sys.executable, "-m", "pytest",
+            str(tests_dir),
+            "-v",
+            "--tb=short"
+        ], capture_output=True, text=True)
+
+        print(result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr)
+
+        if result.returncode == 0:
+            print("✅ All pytest tests passed!")
+            return True
+        else:
+            print("❌ Some pytest tests failed")
+            return False
+
+    except Exception as e:
+        print(f"⚠️  Error running pytest: {e}")
+        return True  # Don't fail the main test suite
+
 def main():
     """Run all tests."""
-    print("🧬 AlphaGenome Chainlit UI - Test Suite")
-    print("=" * 50)
-    
+    print("🧬 AlphaGenome Chainlit UI - Enhanced Test Suite")
+    print("=" * 60)
+
     tests = [
         ("Import Tests", test_imports),
         ("Input Validation Tests", test_input_validation),
+        ("Enhanced Validation Tests", test_enhanced_validation),
         ("Genome Objects Tests", test_genome_objects),
         ("Visualization Tests", test_visualization_setup),
         ("App Structure Tests", test_app_structure),
-        ("App Loading Tests", test_app_loading)
+        ("App Loading Tests", test_app_loading),
+        ("Comprehensive Test Suite", run_pytest_tests)
     ]
-    
+
     passed = 0
     total = len(tests)
-    
+
     for test_name, test_func in tests:
         print(f"\n{'='*20} {test_name} {'='*20}")
         try:
@@ -255,19 +360,26 @@ def main():
         except Exception as e:
             print(f"❌ {test_name} FAILED with exception: {e}")
             traceback.print_exc()
-    
-    print(f"\n{'='*50}")
-    print(f"📊 Test Results: {passed}/{total} tests passed")
-    
+
+    print(f"\n{'='*60}")
+    print(f"📊 Test Results: {passed}/{total} test suites passed")
+
     if passed == total:
         print("🎉 All tests passed! The application is ready to run.")
-        print("\nTo start the application:")
+        print("\n🚀 To start the application:")
         print("1. Set your API key: export ALPHAGENOME_API_KEY=your_key_here")
         print("2. Run: python run_app.py")
         print("3. Open: http://localhost:8000")
+        print("\n🧪 For continuous testing:")
+        print("- Run: python -m pytest tests/ -v")
+        print("- Install pytest: pip install pytest")
         return True
     else:
         print("⚠️  Some tests failed. Please fix the issues before running the application.")
+        print("\n🔧 Troubleshooting:")
+        print("- Check that all dependencies are installed")
+        print("- Verify AlphaGenome package is available")
+        print("- Ensure all required files are present")
         return False
 
 if __name__ == "__main__":

@@ -12,11 +12,14 @@ A comprehensive web-based interface for Google DeepMind's AlphaGenome genomic pr
 - **Interactive Visualizations**: Real-time plotting with AlphaGenome's visualization library
 
 ### Advanced Features
-- **Input Validation**: Comprehensive validation for all genomic inputs
+- **Enhanced Input Validation**: Comprehensive validation for sequences, intervals, variants, and API keys
 - **Multiple Output Types**: RNA-seq, ATAC-seq, ChIP-seq, contact maps, and more
 - **Organism Support**: Human and mouse genome analysis
 - **Ontology Filtering**: Filter predictions by specific tissue/cell types
 - **Export Capabilities**: Download results and visualizations
+- **Robust Error Handling**: Comprehensive error handling with user-friendly messages
+- **Performance Monitoring**: Built-in logging and performance tracking
+- **Comprehensive Testing**: Full test suite with unit, integration, and API tests
 
 ## 🚀 Quick Start
 
@@ -35,15 +38,22 @@ A comprehensive web-based interface for Google DeepMind's AlphaGenome genomic pr
 
 2. **Install additional dependencies**:
    ```bash
-   pip install chainlit
+   pip install -r requirements.txt
+   pip install pytest pytest-asyncio  # For testing
    ```
 
-3. **Set up your API key**:
+3. **Run tests** (Optional but recommended):
+   ```bash
+   python test_app.py  # Basic test suite
+   python -m pytest tests/ -v  # Comprehensive test suite
+   ```
+
+4. **Set up your API key**:
    ```bash
    export ALPHAGENOME_API_KEY=your_api_key_here
    ```
 
-4. **Run the application**:
+5. **Run the application**:
    ```bash
    python run_app.py
    ```
@@ -227,6 +237,49 @@ chainlit run app.py --port 8001
 2. Check the Chainlit logs for error messages
 3. Verify your API key is valid
 4. Ensure all dependencies are installed
+
+## 🧪 Testing and Validation
+
+### Comprehensive Test Suite
+
+The application includes a robust testing framework:
+
+#### Basic Test Suite
+```bash
+python test_app.py
+```
+Tests include:
+- Import validation
+- Input validation (sequences, intervals, variants)
+- Enhanced validation features
+- Genome object creation
+- Visualization setup
+- Application structure
+
+#### Advanced Test Suite
+```bash
+python -m pytest tests/ -v
+```
+Includes:
+- **Unit Tests** (`tests/test_validation.py`): Input validation, API response validation
+- **Integration Tests** (`tests/test_integration.py`): End-to-end functionality testing
+- **Mock API Tests** (`tests/test_api_mock.py`): API interaction testing without real API calls
+
+### Validation Features
+
+#### Input Validation
+- **API Key Validation**: Format and structure validation
+- **DNA Sequence Validation**: Character validation, length limits, N-content checking
+- **Genomic Interval Validation**: Coordinate validation, chromosome format checking
+- **Variant Validation**: Allele validation, position checking, variant type detection
+- **Ontology Terms**: UBERON, CL, GO, and other ontology format validation
+- **Output Types**: AlphaGenome output type validation
+
+#### Error Handling
+- **Comprehensive Error Messages**: User-friendly error descriptions
+- **API Error Handling**: Specific handling for different API error types
+- **Performance Monitoring**: Built-in logging and performance tracking
+- **Graceful Degradation**: Application continues to function even with partial failures
 
 ## 🤝 Contributing
 

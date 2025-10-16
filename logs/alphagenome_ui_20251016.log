@@ -1,0 +1,93 @@
+2025-10-16 10:13:12,809 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:13:31,514 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:27:45,144 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:27:50,286 - alphagenome_ui - INFO - setup_logging:245 - AlphaGenome UI logging initialized
+2025-10-16 10:27:50,311 - alphagenome_ui - INFO - initialize_model:99 - Initializing AlphaGenome model
+2025-10-16 10:27:50,313 - alphagenome_ui - ERROR - initialize_model:174 - Unexpected error during model initialization: Chainlit context not found
+2025-10-16 10:27:50,318 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during model initialization: Traceback (most recent call last):
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 107, in get_context
+    return context_var.get()
+           ^^^^^^^^^^^^^^^^^
+LookupError: <ContextVar name='chainlit' at 0x7e248bf1ede0>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 113, in initialize_model
+    loading_msg = await cl.Message(content="🔄 Initializing AlphaGenome model...").send()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 261, in __init__
+    super().__post_init__()
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 50, in __post_init__
+    self.thread_id = context.session.thread_id
+                     ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 133, in __getattr__
+    return getattr(self.value, name)
+                   ^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 56, in value
+    value = self._func(*self._args, **self._kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 109, in get_context
+    raise ChainlitContextException from e
+chainlit.context.ChainlitContextException: Chainlit context not found
+
+2025-10-16 10:27:50,575 - alphagenome_ui - INFO - initialize_model:99 - Initializing AlphaGenome model
+2025-10-16 10:27:50,575 - alphagenome_ui - WARNING - initialize_model:107 - API key validation failed: Invalid API key format. Google API keys should start with 'AIza'
+2025-10-16 10:27:50,576 - alphagenome_ui - WARNING - handle_validation_error:103 - Validation error [api_key]: Invalid API key format. Google API keys should start with 'AIza' (input: invalid_ke......)
+2025-10-16 10:27:50,577 - alphagenome_ui - ERROR - initialize_model:174 - Unexpected error during model initialization: Chainlit context not found
+2025-10-16 10:27:50,578 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during model initialization: Traceback (most recent call last):
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 107, in get_context
+    return context_var.get()
+           ^^^^^^^^^^^^^^^^^
+LookupError: <ContextVar name='chainlit' at 0x7e248bf1ede0>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 109, in initialize_model
+    await cl.Message(content=error_msg, author="System").send()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 261, in __init__
+    super().__post_init__()
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 50, in __post_init__
+    self.thread_id = context.session.thread_id
+                     ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 133, in __getattr__
+    return getattr(self.value, name)
+                   ^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 56, in value
+    value = self._func(*self._args, **self._kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 109, in get_context
+    raise ChainlitContextException from e
+chainlit.context.ChainlitContextException: Chainlit context not found
+
+2025-10-16 10:27:50,641 - alphagenome_ui - INFO - initialize_model:99 - Initializing AlphaGenome model
+2025-10-16 10:27:50,642 - alphagenome_ui - ERROR - initialize_model:174 - Unexpected error during model initialization: Chainlit context not found
+2025-10-16 10:27:50,643 - alphagenome_ui - ERROR - handle_unexpected_error:133 - Unexpected error during model initialization: Traceback (most recent call last):
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 107, in get_context
+    return context_var.get()
+           ^^^^^^^^^^^^^^^^^
+LookupError: <ContextVar name='chainlit' at 0x7e248bf1ede0>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/workspaces/alphagenome/app.py", line 113, in initialize_model
+    loading_msg = await cl.Message(content="🔄 Initializing AlphaGenome model...").send()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 261, in __init__
+    super().__post_init__()
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/message.py", line 50, in __post_init__
+    self.thread_id = context.session.thread_id
+                     ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 133, in __getattr__
+    return getattr(self.value, name)
+                   ^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/lazify.py", line 56, in value
+    value = self._func(*self._args, **self._kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/chainlit/context.py", line 109, in get_context
+    raise ChainlitContextException from e
+chainlit.context.ChainlitContextException: Chainlit context not found
+

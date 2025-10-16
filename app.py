@@ -11,6 +11,7 @@ import asyncio
 import io
 import os
 import traceback
+import time
 from typing import Dict, List, Optional, Any
 
 import chainlit as cl
@@ -25,10 +26,16 @@ from alphagenome.visualization import plot_components
 import matplotlib
 
 # Local imports
-from ui_components import InputValidator, UIHelpers, AdvancedInputForms, ResultsDisplay
+from ui_components import InputValidator, UIHelpers, AdvancedInputForms, ResultsDisplay, APIValidator
+from utils.logging_config import get_logger, get_error_handler, get_performance_monitor, setup_logging
 
 # Set matplotlib backend for web display
 matplotlib.use('Agg')
+
+# Initialize logging
+logger = setup_logging(os.getenv("LOG_LEVEL", "INFO"))
+error_handler = get_error_handler()
+performance_monitor = get_performance_monitor()
 
 # Global variables
 dna_model = None
@@ -37,9 +44,12 @@ current_session_data = {}
 @cl.on_chat_start
 async def start():
     """Initialize the chat session and display welcome message."""
-    
-    # Welcome message
-    welcome_msg = """
+    logger.info("Starting new chat session")
+    performance_monitor.start_timer("session_initialization")
+
+    try:
+        # Welcome message
+        welcome_msg = """
 # 🧬 Welcome to AlphaGenome Interactive UI
 
 AlphaGenome is Google DeepMind's unifying model for deciphering the regulatory code within DNA sequences.
@@ -54,56 +64,125 @@ AlphaGenome is Google DeepMind's unifying model for deciphering the regulatory c
 1. First, provide your AlphaGenome API key
 2. Choose your analysis type:
    - Sequence Prediction
-   - Interval Prediction  
+   - Interval Prediction
    - Variant Analysis
    - Batch Scoring
 
 Type **"help"** for detailed instructions or **"setup"** to configure your API key.
-    """
-    
-    await cl.Message(content=welcome_msg).send()
-    
-    # Check if API key is available
-    api_key = os.getenv("ALPHAGENOME_API_KEY")
-    if not api_key:
-        await cl.Message(
-            content="⚠️ **API Key Required**: Please set your AlphaGenome API key using the 'setup' command.",
-            author="System"
-        ).send()
-    else:
-        await initialize_model(api_key)
+        """
+
+        await cl.Message(content=welcome_msg).send()
+
+        # Check if API key is available
+        api_key = os.getenv("ALPHAGENOME_API_KEY")
+        if not api_key:
+            logger.info("No API key found in environment")
+            await cl.Message(
+                content="⚠️ **API Key Required**: Please set your AlphaGenome API key using the 'setup' command.",
+                author="System"
+            ).send()
+        else:
+            logger.info("API key found in environment, initializing model")
+            await initialize_model(api_key)
+
+        performance_monitor.end_timer("session_initialization")
+
+    except Exception as e:
+        error_msg = error_handler.handle_unexpected_error(e, "session initialization")
+        await cl.Message(content=error_msg, author="System").send()
+        performance_monitor.end_timer("session_initialization")
 
 async def initialize_model(api_key: str):
     """Initialize the AlphaGenome model with the provided API key."""
     global dna_model
-    
+
+    logger.info("Initializing AlphaGenome model")
+    performance_monitor.start_timer("model_initialization")
+
     try:
+        # Validate API key format first
+        logger.debug("Validating API key format")
+        is_valid, validation_msg = InputValidator.validate_api_key(api_key)
+        if not is_valid:
+            logger.warning(f"API key validation failed: {validation_msg}")
+            error_msg = error_handler.handle_validation_error("api_key", validation_msg, api_key[:10] + "...")
+            await cl.Message(content=error_msg, author="System").send()
+            return False
+
         # Show loading message
         loading_msg = await cl.Message(content="🔄 Initializing AlphaGenome model...").send()
-        
-        # Create the model client
-        dna_model = dna_client.create(api_key)
-        
-        # Test the connection
-        metadata = dna_model.output_metadata()
-        
+
+        # Create the model client with timeout
+        try:
+            logger.debug("Creating DNA client")
+            start_time = time.time()
+            dna_model = dna_client.create(api_key)
+            client_creation_time = time.time() - start_time
+            logger.info(f"DNA client created successfully in {client_creation_time:.2f}s")
+
+        except Exception as e:
+            logger.error(f"Failed to create DNA client: {str(e)}")
+            error_msg = error_handler.handle_api_error(e, "model creation")
+            await loading_msg.update(content=error_msg)
+            return False
+
+        # Test the connection and validate response
+        try:
+            logger.debug("Testing API connection and retrieving metadata")
+            start_time = time.time()
+            metadata = dna_model.output_metadata()
+            metadata_time = time.time() - start_time
+            logger.info(f"Metadata retrieved successfully in {metadata_time:.2f}s")
+
+            is_valid_response, response_msg = APIValidator.validate_api_response(metadata, 'metadata')
+
+            if not is_valid_response:
+                logger.error(f"Invalid API response: {response_msg}")
+                await loading_msg.update(
+                    content=f"❌ **API Response Error**: {response_msg}"
+                )
+                return False
+
+        except Exception as e:
+            logger.error(f"Failed to retrieve metadata: {str(e)}")
+            error_msg = error_handler.handle_api_error(e, "metadata retrieval")
+            await loading_msg.update(content=error_msg)
+            return False
+
+        # Count available output types
+        output_count = len([field for field in metadata.__dataclass_fields__])
+        logger.info(f"Model initialized with {output_count} available output types")
+
         # Update loading message with success
         await loading_msg.update(
             content="✅ **AlphaGenome model initialized successfully!**\n\n"
-                   f"Available output types: {len([field for field in metadata.__dataclass_fields__])}\n"
-                   "You can now start making predictions!"
+                   f"🔬 Available output types: {output_count}\n"
+                   f"🔑 API key validated: {validation_msg}\n"
+                   "🚀 You can now start making predictions!"
         )
-        
+
         # Store in session
         current_session_data['model'] = dna_model
         current_session_data['api_key'] = api_key
-        
+        current_session_data['metadata'] = metadata
+
+        performance_monitor.end_timer("model_initialization", {"output_types": output_count})
+        logger.info("Model initialization completed successfully")
+        return True
+
     except Exception as e:
+        logger.error(f"Unexpected error during model initialization: {str(e)}")
+        error_msg = error_handler.handle_unexpected_error(e, "model initialization")
         await cl.Message(
-            content=f"❌ **Error initializing model**: {str(e)}\n\n"
-                   "Please check your API key and try again.",
+            content=f"{error_msg}\n\n"
+                   "💡 **Troubleshooting tips:**\n"
+                   "- Verify your API key is correct\n"
+                   "- Check your internet connection\n"
+                   "- Ensure you have API quota remaining",
             author="System"
         ).send()
+        performance_monitor.end_timer("model_initialization")
+        return False
 
 @cl.on_message
 async def main(message: cl.Message):
